@@ -9,3 +9,6 @@
  
 待添加功能:
   使用通知，退出功能，搜索功能，进度条，随机播放。
+  
+1.MediaPlayer虽然在服务中创建，但是若是服务停止后不释放MediaPlayer，音乐仍然播放。所以要在服务的onDestroy方法中使用release方法释放资源。
+2.停止服务可以放在activity的onDestroy中，避免切换Fragment而停止服务。
