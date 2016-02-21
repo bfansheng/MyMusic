@@ -1,5 +1,7 @@
 package com.bfansheng.mymusic.service;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -7,8 +9,11 @@ import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.bfansheng.mymusic.MainActivity;
+import com.bfansheng.mymusic.R;
 import com.bfansheng.mymusic.fragment.MyMusicFragment;
 
 import java.io.File;
@@ -17,7 +22,6 @@ import java.io.File;
  * Created by Hp on 2016/2/19.
  */
 public class MusicService extends Service {
-
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private MusicBinder musicBinder = new MusicBinder();
     public final static File musicPath = new File(Environment.getExternalStorageDirectory().getPath() + "/netease/cloudmusic/Music");
@@ -25,51 +29,47 @@ public class MusicService extends Service {
     public class MusicBinder extends Binder {
 
         private int currentPosition;
+        public String musicName;
 
+        //播放
         public void startMusic(int position) {
             mediaPlayer.reset();
             currentPosition = position;
             setCurrentPosition(position);
             initMediaPlayer(position);
-            mediaPlayer.start();
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            new Thread(new Runnable() {
                 @Override
-                public void onCompletion(MediaPlayer mp) {
-                    if (musicBinder.getCurrentPosition() + 1 == new MyMusicFragment().getMusicList().size()) {
-                        musicBinder.setCurrentPosition(0);
-                        musicBinder.startMusic(0);
-                    } else {
-                        musicBinder.nextMusic();
-                    }
+                public void run() {
+                    mediaPlayer.start();
                 }
-            });
+            }).start();
         }
 
-        //上一首
-        public void previousMusic() {
-            mediaPlayer.reset();
-            musicBinder.startMusic(getCurrentPosition() - 1);
-        }
+//        //上一首
+//        public void previousMusic() {
+//            mediaPlayer.reset();
+//            musicBinder.startMusic(getCurrentPosition() - 1);
+//        }
 
-        //下一首
-        public void nextMusic() {
-            mediaPlayer.reset();
-            musicBinder.startMusic(getCurrentPosition() + 1);
-        }
+//        //下一首
+//        public void nextMusic() {
+//            mediaPlayer.reset();
+//            musicBinder.startMusic(getCurrentPosition() + 1);
+//        }
 
         //释放资源
         public void resetMusic() {
             mediaPlayer.reset();
         }
 
-        //切换暂停播放
-        public void pauseMusic() {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.pause();
-            } else {
-                mediaPlayer.start();
-            }
-        }
+//        //切换暂停播放
+//        public void pauseMusic() {
+//            if (mediaPlayer.isPlaying()) {
+//                mediaPlayer.pause();
+//            } else {
+//                mediaPlayer.start();
+//            }
+//        }
 
         //返回当前播放歌曲位置
         public int getCurrentPosition() {
@@ -80,11 +80,29 @@ public class MusicService extends Service {
             currentPosition = position;
         }
 
-    }
+        //初始化MediaPlayer
+        public void initMediaPlayer(int position) {
+            try {
+                File file = new File(musicPath + "/" + new MyMusicFragment().getMusicList().get(position));
+                Log.i("MusicService", file.getPath());
+                musicName = new MyMusicFragment().getMusicList().get(position);
+                mediaPlayer.setDataSource(file.getPath());
+                mediaPlayer.prepare();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+        public MediaPlayer getMediaPlayer() {
+            return mediaPlayer;
+        }
+
+        //使用正则表达式处理音乐文件名
+        public String handleName(int position) {
+            String name =  new MyMusicFragment().getMusicList().get(position);
+            name = name.replaceAll(".*-", "");
+            return name;
+        }
     }
 
     @Nullable
@@ -98,15 +116,9 @@ public class MusicService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    //初始化MediaPlayer
-    public void initMediaPlayer(int position) {
-        try {
-            File file = new File(musicPath + "/" + new MyMusicFragment().getMusicList().get(position));
-            Log.i("MusicService", file.getPath());
-            mediaPlayer.setDataSource(file.getPath());
-            mediaPlayer.prepare();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mediaPlayer.release();
     }
 }

@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ic_musicbackground"
     android:orientation="vertical">
 
     <LinearLayout
@@ -14,13 +13,16 @@
         <ListView
             android:id="@+id/list_music"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:divider="@color/colorAccent"
+            android:dividerHeight="1dp"/>
     </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="@color/colorAccent"
         android:orientation="horizontal">
 
         <Button
@@ -28,6 +30,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_centerInParent="true"
+            android:selectAllOnFocus="true"
             android:background="@drawable/ic_play_circle_outline_white_48dp" />
 
         <Button
