@@ -28,6 +28,7 @@ public class MusicService extends Service {
 
     public class MusicBinder extends Binder {
 
+        private MediaPlayer mediaPlayer1 = new MediaPlayer();
         private int currentPosition;
         public String musicName;
 
@@ -37,6 +38,7 @@ public class MusicService extends Service {
             currentPosition = position;
             setCurrentPosition(position);
             initMediaPlayer(position);
+            mediaPlayer1 = mediaPlayer;
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -94,7 +96,11 @@ public class MusicService extends Service {
         }
 
         public MediaPlayer getMediaPlayer() {
-            return mediaPlayer;
+            return mediaPlayer1;
+        }
+
+        public void setMediaPlayer(MediaPlayer mediaPlayer1) {
+            mediaPlayer = mediaPlayer1;
         }
 
         //使用正则表达式处理音乐文件名

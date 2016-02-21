@@ -34,6 +34,7 @@ import java.util.List;
  */
 public class MyMusicFragment extends Fragment implements View.OnClickListener {
 
+    private MediaPlayer mediaPlayer;
     Flag mCallback;
     private List<String> musicList = new ArrayList<String>();
     private MyAdapter arrayAdapter;
@@ -176,25 +177,17 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             play.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
             mCallback.setFlag(2); //音乐已经暂停
             getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
+            musicBinder.getMediaPlayer().pause();
         } else if (mCallback.getFlag() >= 1) { //flag == 0为第一次打开播放器，无法直接切换播放
             play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
             mCallback.setFlag(1);
             getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
+            musicBinder.getMediaPlayer().start();
         } else {
             Toast.makeText(getActivity(), "亲，您还未选择音乐哟^_^", Toast.LENGTH_LONG).show();
         }
-        pauseMusic();
     }
 
-    //切换暂停播放
-    public void pauseMusic() {
-        if (musicBinder.getMediaPlayer().isPlaying()) {
-            musicBinder.getMediaPlayer().pause();
-        } else {
-            musicBinder.getMediaPlayer().start();
-            onComplete(musicBinder.getCurrentPosition());
-        }
-    }
 
     @Override
     public void onAttach(Activity activity) {
