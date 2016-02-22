@@ -182,7 +182,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
             mCallback.setFlag(1);
             getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
-            musicBinder.getMediaPlayer().start();
+            onComplete(musicBinder.getCurrentPosition());
         } else {
             Toast.makeText(getActivity(), "亲，您还未选择音乐哟^_^", Toast.LENGTH_LONG).show();
         }
