@@ -34,7 +34,6 @@ import java.util.List;
  */
 public class MyMusicFragment extends Fragment implements View.OnClickListener {
 
-    private MediaPlayer mediaPlayer;
     Flag mCallback;
     private List<String> musicList = new ArrayList<String>();
     private MyAdapter arrayAdapter;
