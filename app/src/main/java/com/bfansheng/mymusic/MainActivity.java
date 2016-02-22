@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements MyMusicFragment.F
     private NavigationView mNavigationView;
     private Intent intent;
     private int flag = 0;
+    private int mode = 0;
 
     public int getFlag() {
         return flag;
@@ -36,6 +37,14 @@ public class MainActivity extends AppCompatActivity implements MyMusicFragment.F
 
     public void setFlag(int flag) {
         this.flag = flag;
+    }
+
+    public int getPlayMode() {
+        return mode;
+    }
+
+    public void setPlayMode(int mode) {
+        this.mode = mode;
     }
 
     @Override

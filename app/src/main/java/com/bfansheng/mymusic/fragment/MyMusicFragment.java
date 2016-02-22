@@ -42,6 +42,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     private Button next_button;
     private Button previous_button;
     private Button play;
+    private Button play_mode;
     private TextView listItem;
     private MusicService.MusicBinder musicBinder;
     private Intent intent;
@@ -50,6 +51,10 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         public int getFlag();
 
         public void setFlag(int flag);
+
+        public int getPlayMode();
+
+        public void setPlayMode(int mode);
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -78,12 +83,19 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         play = (Button) getActivity().findViewById(R.id.play_music);
-        //切换fragment时判断音乐是否在播放，设置在切回来播放按钮选择
         play.setOnClickListener(this);
+        //切换fragment时判断音乐是否在播放，设置在切回来播放按钮选择
         if (mCallback.getFlag() == 1) { //表示音乐正在播放
             play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
         } else if (mCallback.getFlag() == 2) { //表示音乐已经暂停
             play.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
+        }
+        play_mode = (Button) getActivity().findViewById(R.id.play_mode);
+        play_mode.setOnClickListener(this);
+        if (mCallback.getPlayMode() == 0) {
+            play_mode.setBackgroundResource(R.drawable.ic_loop_white_24dp);
+        } else if (mCallback.getPlayMode() == 1) {
+            play_mode.setBackgroundResource(R.drawable.ic_shuffle_white_24dp);
         }
         next_button = (Button) getActivity().findViewById(R.id.next_music);
         next_button.setOnClickListener(this);
@@ -102,9 +114,8 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 musicBinder.setCurrentPosition(position);
                 play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
-                musicBinder.resetMusic();
+
                 onComplete(musicBinder.getCurrentPosition());
-                mCallback.setFlag(1);
                 getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
             }
         });
@@ -126,6 +137,16 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.play_music:
                 play();
+                break;
+            case R.id.play_mode:
+                if (mCallback.getPlayMode() == 0) {
+                    play_mode.setBackgroundResource(R.drawable.ic_shuffle_white_24dp);
+                    mCallback.setPlayMode(1);
+                } else if (mCallback.getPlayMode() == 1) {
+                    play_mode.setBackgroundResource(R.drawable.ic_loop_white_24dp);
+                    mCallback.setPlayMode(0);
+                }
+                break;
             default:
                 break;
         }
@@ -141,25 +162,39 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         return musicList;
     }
 
+    //上一首
     public void playPrevious() {
-        if (musicBinder.getCurrentPosition() - 1 < 0) {
-            musicBinder.setCurrentPosition(musicList.size() - 1);
-            musicBinder.startMusic(musicList.size() - 1);
-        } else {
-            musicBinder.getMediaPlayer().reset();
-            //musicBinder.startMusic(musicBinder.getCurrentPosition() - 1);
-            onComplete(musicBinder.getCurrentPosition() - 1);
+        switch (mCallback.getPlayMode()) {
+            case 0:
+                if (musicBinder.getCurrentPosition() - 1 < 0) {
+                    musicBinder.setCurrentPosition(musicList.size() - 1);
+                    musicBinder.startMusic(musicList.size() - 1);
+                } else {
+                    musicBinder.getMediaPlayer().reset();
+                    //musicBinder.startMusic(musicBinder.getCurrentPosition() - 1);
+                    onComplete(musicBinder.getCurrentPosition() - 1);
+                }
+                break;
+            case 1:
+                playMode();
         }
         getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
     }
 
+    //下一首
     public void playNext() {
-        if (musicBinder.getCurrentPosition() + 1 == musicList.size()) {
-            musicBinder.setCurrentPosition(0);
-            musicBinder.startMusic(0);
-        } else {
-            musicBinder.getMediaPlayer().reset();
-            onComplete(musicBinder.getCurrentPosition() + 1);
+        switch (mCallback.getPlayMode()) {
+            case 0:
+                if (musicBinder.getCurrentPosition() + 1 == musicList.size()) {
+                    musicBinder.setCurrentPosition(0);
+                    musicBinder.startMusic(0);
+                } else {
+                    musicBinder.getMediaPlayer().reset();
+                    onComplete(musicBinder.getCurrentPosition() + 1);
+                }
+                break;
+            case 1:
+                playMode();
         }
         getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
     }
@@ -171,7 +206,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         //Log.i("MyMusicFragment", "onDetach()");
     }
 
-    //切换图标
+    //播放/暂停
     public void play() {
         if (musicBinder.getMediaPlayer().isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
@@ -182,7 +217,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
             mCallback.setFlag(1);
             getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
-            onComplete(musicBinder.getCurrentPosition());
+            musicBinder.getMediaPlayer().start();
         } else {
             Toast.makeText(getActivity(), "亲，您还未选择音乐哟^_^", Toast.LENGTH_LONG).show();
         }
@@ -200,17 +235,29 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         musicBinder.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-
-                if (musicBinder.getCurrentPosition() + 1 == new MyMusicFragment().getMusicList().size()) {
-                    getActivity().setTitle(musicBinder.handleName(0));
-                    musicBinder.setCurrentPosition(0);
-                    musicBinder.startMusic(0);
-                } else {
-                    getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition() + 1));
-                    musicBinder.getMediaPlayer().reset();
-                    onComplete(musicBinder.getCurrentPosition() + 1);
+                switch (mCallback.getPlayMode()) {
+                    case 0:
+                        if (musicBinder.getCurrentPosition() + 1 == new MyMusicFragment().getMusicList().size()) {
+                            getActivity().setTitle(musicBinder.handleName(0));
+                            musicBinder.setCurrentPosition(0);
+                            musicBinder.startMusic(0);
+                        } else {
+                            getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition() + 1));
+                            musicBinder.getMediaPlayer().reset();
+                            onComplete(musicBinder.getCurrentPosition() + 1);
+                        }
+                        break;
+                    case 1:
+                        playMode();
                 }
             }
         });
+    }
+
+    public void playMode() {
+        int random = (int) (Math.random() * (musicList.size()));
+        Log.i("随机数", String.valueOf(random));
+        getActivity().setTitle(musicBinder.handleName(random));
+        onComplete(random);
     }
 }

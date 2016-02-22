@@ -47,32 +47,6 @@ public class MusicService extends Service {
             }).start();
         }
 
-//        //上一首
-//        public void previousMusic() {
-//            mediaPlayer.reset();
-//            musicBinder.startMusic(getCurrentPosition() - 1);
-//        }
-
-//        //下一首
-//        public void nextMusic() {
-//            mediaPlayer.reset();
-//            musicBinder.startMusic(getCurrentPosition() + 1);
-//        }
-
-        //释放资源
-        public void resetMusic() {
-            mediaPlayer.reset();
-        }
-
-//        //切换暂停播放
-//        public void pauseMusic() {
-//            if (mediaPlayer.isPlaying()) {
-//                mediaPlayer.pause();
-//            } else {
-//                mediaPlayer.start();
-//            }
-//        }
-
         //返回当前播放歌曲位置
         public int getCurrentPosition() {
             return currentPosition;
@@ -86,7 +60,8 @@ public class MusicService extends Service {
         public void initMediaPlayer(int position) {
             try {
                 File file = new File(musicPath + "/" + new MyMusicFragment().getMusicList().get(position));
-                Log.i("MusicService", file.getPath());
+                Log.i("MusicService", String.valueOf(position) + file.getPath());
+                Log.i("size", String.valueOf(new MyMusicFragment().getMusicList().size()));
                 musicName = new MyMusicFragment().getMusicList().get(position);
                 mediaPlayer.setDataSource(file.getPath());
                 mediaPlayer.prepare();

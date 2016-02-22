@@ -51,6 +51,7 @@
             android:background="@drawable/ic_skip_previous_white_48dp" />
 
         <Button
+            android:id="@+id/play_mode"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:background="@drawable/ic_loop_white_24dp"
