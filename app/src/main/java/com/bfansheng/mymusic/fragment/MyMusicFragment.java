@@ -113,7 +113,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 musicBinder.setCurrentPosition(position);
                 play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
-
                 onComplete(musicBinder.getCurrentPosition());
                 getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
             }

@@ -74,9 +74,6 @@ public class MusicService extends Service {
             return mediaPlayer1;
         }
 
-        public void setMediaPlayer(MediaPlayer mediaPlayer1) {
-            mediaPlayer = mediaPlayer1;
-        }
 
         //使用正则表达式处理音乐文件名
         public String handleName(int position) {
@@ -91,6 +88,7 @@ public class MusicService extends Service {
     public IBinder onBind(Intent intent) {
         return musicBinder;
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
