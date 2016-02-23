@@ -6,10 +6,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +30,7 @@ import com.bfansheng.mymusic.utils.MyAdapter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -36,6 +40,9 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
 
     Flag mCallback;
     private List<String> musicList = new ArrayList<String>();
+    private List<String> pathList = new ArrayList<String>();
+    private List<String> titleList = new ArrayList<String>();
+    private List<HashMap<String, String>> adapterList = new ArrayList<>();
     private MyAdapter arrayAdapter;
     public final static File musicPath = new File(Environment.getExternalStorageDirectory().getPath() + "/netease/cloudmusic/Music");
     private Button next_button;
@@ -69,6 +76,50 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         }
     };
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Cursor cursor = getActivity().getContentResolver()
+                .query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        new String[]{MediaStore.Audio.Media.TITLE,
+                                MediaStore.Audio.Media.DURATION,
+                                MediaStore.Audio.Media.ALBUM,
+                                MediaStore.Audio.Media.ARTIST,
+                                MediaStore.Audio.Media._ID,
+                                MediaStore.Audio.Media.DATA,
+                                MediaStore.Audio.Media.DISPLAY_NAME}, null,
+                        null, null);
+        //获取音乐时长索引
+        int timeIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION);
+        //获取歌曲名称索引
+        int titleIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
+        //路径名索引
+        int pathIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+        //歌手名索引
+        int artistIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
+        //文件名索引
+        int display_nameIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                String title = cursor.getString(titleIndex);
+                String display_name = cursor.getString(display_nameIndex);
+                String path = cursor.getString(pathIndex);
+                String artist = cursor.getString(artistIndex);
+                long time = cursor.getLong(timeIndex);
+                HashMap<String, String> hashMap = new HashMap<>();
+                if (time > 60000) {
+                    hashMap.put("title", title);
+                    hashMap.put("artist", artist);
+                    adapterList.add(hashMap);
+                    musicList.add(display_name);
+                    pathList.add(path);
+                    titleList.add(title);
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        arrayAdapter = new MyAdapter(getActivity(), R.layout.item_musiclist, adapterList);
+    }
 
     @Nullable
     @Override
@@ -105,8 +156,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
         //配置ListView
         ListView listView = (ListView) getActivity().findViewById(R.id.list_music);
-        musicList = getMusicList();
-        arrayAdapter = new MyAdapter(getActivity(), R.layout.item_musiclist, musicList);
         listView.setAdapter(arrayAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -114,7 +163,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
                 musicBinder.setCurrentPosition(position);
                 play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
                 onComplete(musicBinder.getCurrentPosition());
-                getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
             }
         });
     }
@@ -150,16 +198,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    //从内存获取音乐列表
-    public List<String> getMusicList() {
-        if (musicPath.listFiles().length > 0) {
-            for (File file : musicPath.listFiles()) {
-                musicList.add(file.getName());
-            }
-        }
-        return musicList;
-    }
-
     //上一首
     public void playPrevious() {
         switch (mCallback.getPlayMode()) {
@@ -176,7 +214,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             case 1:
                 playMode();
         }
-        getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
     }
 
     //下一首
@@ -194,7 +231,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             case 1:
                 playMode();
         }
-        getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
     }
 
     @Override
@@ -209,12 +245,10 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         if (musicBinder.getMediaPlayer().isPlaying()) {
             play.setBackgroundResource(R.drawable.ic_play_circle_outline_white_48dp);
             mCallback.setFlag(2); //音乐已经暂停
-            getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
             musicBinder.getMediaPlayer().pause();
         } else if (mCallback.getFlag() >= 1) { //flag == 0为第一次打开播放器，无法直接切换播放
             play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
             mCallback.setFlag(1);
-            getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition()));
             musicBinder.getMediaPlayer().start();
         } else {
             Toast.makeText(getActivity(), "亲，您还未选择音乐哟^_^", Toast.LENGTH_LONG).show();
@@ -229,18 +263,31 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     }
 
     public void onComplete(int position) {
+        musicBinder.mediaPlayer1.reset();
+        //初始化MediaPlayer
+        try {
+            File file = new File(pathList.get(position));
+            Log.i("MusicService", String.valueOf(position) + file.getPath());
+            Log.i("size", String.valueOf(musicList.size()));
+            musicBinder.musicName = musicList.get(position);
+            musicBinder.mediaPlayer1.setDataSource(file.getPath());
+            musicBinder.mediaPlayer1.prepare();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        getActivity().setTitle(String.valueOf(position + 1) + "\t\t\t" + titleList.get(position));
         musicBinder.startMusic(position);
         musicBinder.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 switch (mCallback.getPlayMode()) {
                     case 0:
-                        if (musicBinder.getCurrentPosition() + 1 == new MyMusicFragment().getMusicList().size()) {
-                            getActivity().setTitle(musicBinder.handleName(0));
+                        if (musicBinder.getCurrentPosition() + 1 == new MyMusicFragment().musicList.size()) {
+                            // getActivity().setTitle(musicBinder.handleName(0));
                             musicBinder.setCurrentPosition(0);
                             musicBinder.startMusic(0);
                         } else {
-                            getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition() + 1));
+                            // getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition() + 1));
                             musicBinder.getMediaPlayer().reset();
                             onComplete(musicBinder.getCurrentPosition() + 1);
                         }
@@ -255,7 +302,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     public void playMode() {
         int random = (int) (Math.random() * (musicList.size()));
         Log.i("随机数", String.valueOf(random));
-        getActivity().setTitle(musicBinder.handleName(random));
+        // getActivity().setTitle(musicBinder.handleName(random));
         onComplete(random);
     }
 }
