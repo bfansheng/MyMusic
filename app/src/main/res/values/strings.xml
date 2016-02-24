@@ -3,6 +3,5 @@
     <string name="action_settings">Settings</string>
     <string name="drawer_open">open</string>
     <string name="drawer_close">close</string>
-    <string name="search_text">\t正在开发，敬请期待。。。\n</string>
     <string name="about">\t本项目使用fragment和service通信来实现播放音乐播放功能。\n\n项目地址：https://github.com/bfansheng/MyMusic</string>
 </resources>
