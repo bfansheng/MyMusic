@@ -163,6 +163,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
                 musicBinder.setCurrentPosition(position);
                 play.setBackgroundResource(R.drawable.ic_pause_circle_outline_white_48dp);
                 onComplete(musicBinder.getCurrentPosition());
+                mCallback.setFlag(1);
             }
         });
     }
