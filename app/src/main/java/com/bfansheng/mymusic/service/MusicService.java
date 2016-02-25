@@ -30,7 +30,6 @@ public class MusicService extends Service {
 
         public MediaPlayer mediaPlayer1 = mediaPlayer;
         private int currentPosition;
-        public String musicName;
 
         //播放
         public void startMusic(int position) {
@@ -53,20 +52,6 @@ public class MusicService extends Service {
             currentPosition = position;
         }
 
-//        //初始化MediaPlayer
-//        public void initMediaPlayer(int position) {
-//            try {
-//                File file = new File(musicPath + "/" + new MyMusicFragment().getMusicList().get(position));
-//                Log.i("MusicService", String.valueOf(position) + file.getPath());
-//                Log.i("size", String.valueOf(new MyMusicFragment().getMusicList().size()));
-//                musicName = new MyMusicFragment().getMusicList().get(position);
-//                mediaPlayer.setDataSource(file.getPath());
-//                mediaPlayer.prepare();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-
         public MediaPlayer getMediaPlayer() {
             return mediaPlayer1;
         }
@@ -74,13 +59,7 @@ public class MusicService extends Service {
         public void setMediaPlayer(MediaPlayer mediaPlayer1) {
             mediaPlayer = mediaPlayer1;
         }
-//
-//        //使用正则表达式处理音乐文件名
-//        public String handleName(int position) {
-//            String name =  new MyMusicFragment().getMusicList().get(position);
-//            name = name.replaceAll(".*-", "");
-//            return name;
-//        }
+
     }
 
     @Nullable

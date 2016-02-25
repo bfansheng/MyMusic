@@ -44,7 +44,7 @@ public class MyAdapter extends ArrayAdapter<HashMap<String, String>> {
             viewHolder = (ViewHolder) view.getTag();
         }
         viewHolder.title.setText(music.get("title"));
-        viewHolder.artist.setText(music.get("artist"));
+        viewHolder.artist.setText(music.get("artist") + " | " + music.get("album"));
         viewHolder.index.setText(String.valueOf(position + 1));
         return view;
     }

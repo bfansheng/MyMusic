@@ -44,7 +44,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     private List<String> titleList = new ArrayList<String>();
     private List<HashMap<String, String>> adapterList = new ArrayList<>();
     private MyAdapter arrayAdapter;
-    public final static File musicPath = new File(Environment.getExternalStorageDirectory().getPath() + "/netease/cloudmusic/Music");
     private Button next_button;
     private Button previous_button;
     private Button play;
@@ -99,6 +98,8 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         int artistIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
         //文件名索引
         int display_nameIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME);
+        //专辑名索引
+        int albumIndex = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM);
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 String title = cursor.getString(titleIndex);
@@ -106,10 +107,12 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
                 String path = cursor.getString(pathIndex);
                 String artist = cursor.getString(artistIndex);
                 long time = cursor.getLong(timeIndex);
+                String album = cursor.getString(albumIndex);
                 HashMap<String, String> hashMap = new HashMap<>();
                 if (time > 60000) {
                     hashMap.put("title", title);
                     hashMap.put("artist", artist);
+                    hashMap.put("album", album);
                     adapterList.add(hashMap);
                     musicList.add(display_name);
                     pathList.add(path);
@@ -270,7 +273,6 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             File file = new File(pathList.get(position));
             Log.i("MusicService", String.valueOf(position) + file.getPath());
             Log.i("size", String.valueOf(musicList.size()));
-            musicBinder.musicName = musicList.get(position);
             musicBinder.mediaPlayer1.setDataSource(file.getPath());
             musicBinder.mediaPlayer1.prepare();
         } catch (Exception e) {
