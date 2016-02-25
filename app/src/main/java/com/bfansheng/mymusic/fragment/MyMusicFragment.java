@@ -9,7 +9,6 @@ import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -20,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,9 +37,9 @@ import java.util.List;
 public class MyMusicFragment extends Fragment implements View.OnClickListener {
 
     Flag mCallback;
-    private List<String> musicList = new ArrayList<String>();
-    private List<String> pathList = new ArrayList<String>();
-    private List<String> titleList = new ArrayList<String>();
+    private List<String> musicList = new ArrayList<>();
+    private List<String> pathList = new ArrayList<>();
+    private List<String> titleList = new ArrayList<>();
     private List<String> artistList = new ArrayList<>();
     private List<HashMap<String, String>> adapterList = new ArrayList<>();
     private MyAdapter arrayAdapter;
@@ -54,13 +52,13 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     private Intent intent;
 
     public interface Flag {
-        public int getFlag();
+        int getFlag();
 
-        public void setFlag(int flag);
+        void setFlag(int flag);
 
-        public int getPlayMode();
+        int getPlayMode();
 
-        public void setPlayMode(int mode);
+        void setPlayMode(int mode);
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -210,15 +208,17 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             case 0:
                 if (musicBinder.getCurrentPosition() - 1 < 0) {
                     musicBinder.setCurrentPosition(musicList.size() - 1);
-                    musicBinder.startMusic(musicList.size() - 1);
+                    onComplete(musicList.size() - 1);
                 } else {
-                    musicBinder.getMediaPlayer().reset();
                     //musicBinder.startMusic(musicBinder.getCurrentPosition() - 1);
                     onComplete(musicBinder.getCurrentPosition() - 1);
                 }
                 break;
             case 1:
                 playMode();
+                break;
+            default:
+                break;
         }
     }
 
@@ -228,14 +228,16 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             case 0:
                 if (musicBinder.getCurrentPosition() + 1 == musicList.size()) {
                     musicBinder.setCurrentPosition(0);
-                    musicBinder.startMusic(0);
+                    onComplete(0);
                 } else {
-                    musicBinder.getMediaPlayer().reset();
                     onComplete(musicBinder.getCurrentPosition() + 1);
                 }
                 break;
             case 1:
                 playMode();
+                break;
+            default:
+                break;
         }
     }
 
@@ -269,7 +271,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     }
 
     public void onComplete(int position) {
-        musicBinder.mediaPlayer1.reset();
+        musicBinder.getMediaPlayer().reset();
         //初始化MediaPlayer
         try {
             File file = new File(pathList.get(position));
@@ -290,18 +292,19 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
             public void onCompletion(MediaPlayer mp) {
                 switch (mCallback.getPlayMode()) {
                     case 0:
-                        if (musicBinder.getCurrentPosition() + 1 == new MyMusicFragment().musicList.size()) {
-                            // getActivity().setTitle(musicBinder.handleName(0));
+                        if (musicBinder.getCurrentPosition() + 1 == musicList.size()) {
                             musicBinder.setCurrentPosition(0);
-                            musicBinder.startMusic(0);
+                            onComplete(0);
                         } else {
                             // getActivity().setTitle(musicBinder.handleName(musicBinder.getCurrentPosition() + 1));
-                            musicBinder.getMediaPlayer().reset();
                             onComplete(musicBinder.getCurrentPosition() + 1);
                         }
                         break;
                     case 1:
                         playMode();
+                        break;
+                    default:
+                        break;
                 }
             }
         });

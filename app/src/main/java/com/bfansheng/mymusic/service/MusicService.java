@@ -6,18 +6,12 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
-import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.bfansheng.mymusic.MainActivity;
 import com.bfansheng.mymusic.R;
-import com.bfansheng.mymusic.fragment.MyMusicFragment;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Created by Hp on 2016/2/19.
@@ -56,10 +50,6 @@ public class MusicService extends Service {
 
         public MediaPlayer getMediaPlayer() {
             return mediaPlayer1;
-        }
-
-        public void setMediaPlayer(MediaPlayer mediaPlayer1) {
-            mediaPlayer = mediaPlayer1;
         }
 
         public String getName() {
