@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements MyMusicFragment.F
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            exit();
             return true;
         }
 
@@ -124,23 +125,7 @@ public class MainActivity extends AppCompatActivity implements MyMusicFragment.F
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-            dialog.setTitle("退出");
-            dialog.setMessage("你真的要退出吗？");
-            dialog.setCancelable(false);
-            dialog.setPositiveButton("退出", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            });
-            dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-            //显示AlertDialog
-            dialog.show();
+            exit();
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -150,5 +135,25 @@ public class MainActivity extends AppCompatActivity implements MyMusicFragment.F
         super.onDestroy();
         stopService(intent);
         //Log.i("MainActivity", "onDestroy");
+    }
+
+    public void exit() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+        dialog.setTitle("退出");
+        dialog.setMessage("你真的要退出吗？");
+        dialog.setCancelable(false);
+        dialog.setPositiveButton("退出", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        //显示AlertDialog
+        dialog.show();
     }
 }

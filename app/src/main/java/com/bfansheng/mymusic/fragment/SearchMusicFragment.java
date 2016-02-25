@@ -1,6 +1,7 @@
 package com.bfansheng.mymusic.fragment;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -42,6 +43,7 @@ public class SearchMusicFragment extends Fragment implements View.OnClickListene
     private List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
     private SearchAdapter adapter;
     private ListView listView;
+    private ProgressDialog progressDialog;
 
     @Nullable
     @Override
@@ -63,6 +65,12 @@ public class SearchMusicFragment extends Fragment implements View.OnClickListene
     public void onClick(View v) {
         if (v.getId() == R.id.search_button) {
             finalPath = path + (inputText.getText());
+            //再次请求把原先数据清除
+            list.clear();
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setTitle("提示");
+            progressDialog.setMessage("正在努力查询中...");
+            progressDialog.show();
             new LoadTask().execute(finalPath);
         }
     }
@@ -81,10 +89,12 @@ public class SearchMusicFragment extends Fragment implements View.OnClickListene
                 adapter = new SearchAdapter(getActivity(), list);
                 listView.setAdapter(adapter);
                 adapter.notifyDataSetChanged();
+                progressDialog.dismiss();
             } else if (s == null) {
-                Toast.makeText(getActivity(), "请求数据失败...",
+                Toast.makeText(getActivity(), "请检查网络哟，亲...",
                         Toast.LENGTH_LONG).show();
             }
+            progressDialog.dismiss();
         }
     }
 
@@ -117,7 +127,7 @@ public class SearchMusicFragment extends Fragment implements View.OnClickListene
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 JSONArray authorArray = jsonObject.getJSONArray("author");
-                JSONObject authorObject=authorArray.getJSONObject(0);
+                JSONObject authorObject = authorArray.getJSONObject(0);
                 String author = authorObject.getString("name");
                 String title = jsonObject.optString("title");
                 String image = jsonObject.optString("image");
@@ -130,7 +140,6 @@ public class SearchMusicFragment extends Fragment implements View.OnClickListene
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i("-------", list.get(0).get("title").toString());
         return list;
     }
 }
