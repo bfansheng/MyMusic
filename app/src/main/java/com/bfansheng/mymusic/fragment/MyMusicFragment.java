@@ -42,6 +42,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
     private List<String> musicList = new ArrayList<String>();
     private List<String> pathList = new ArrayList<String>();
     private List<String> titleList = new ArrayList<String>();
+    private List<String> artistList = new ArrayList<>();
     private List<HashMap<String, String>> adapterList = new ArrayList<>();
     private MyAdapter arrayAdapter;
     private Button next_button;
@@ -117,6 +118,7 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
                     musicList.add(display_name);
                     pathList.add(path);
                     titleList.add(title);
+                    artistList.add(artist);
                 }
             } while (cursor.moveToNext());
         }
@@ -278,6 +280,9 @@ public class MyMusicFragment extends Fragment implements View.OnClickListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        musicBinder.setName(titleList.get(position));
+        musicBinder.setArtist(artistList.get(position));
+        getActivity().startService(intent);
         getActivity().setTitle(String.valueOf(position + 1) + "\t\t\t" + titleList.get(position));
         musicBinder.startMusic(position);
         musicBinder.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {

@@ -17,6 +17,7 @@ import com.bfansheng.mymusic.R;
 import com.bfansheng.mymusic.fragment.MyMusicFragment;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created by Hp on 2016/2/19.
@@ -24,12 +25,13 @@ import java.io.File;
 public class MusicService extends Service {
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private MusicBinder musicBinder = new MusicBinder();
-    public final static File musicPath = new File(Environment.getExternalStorageDirectory().getPath() + "/netease/cloudmusic/Music");
 
     public class MusicBinder extends Binder {
 
         public MediaPlayer mediaPlayer1 = mediaPlayer;
-        private int currentPosition;
+        private int currentPosition = 0;
+        private String name;
+        private String artist;
 
         //播放
         public void startMusic(int position) {
@@ -60,6 +62,21 @@ public class MusicService extends Service {
             mediaPlayer = mediaPlayer1;
         }
 
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getArtist() {
+            return artist;
+        }
+
+        public void setArtist(String artist) {
+            this.artist = artist;
+        }
     }
 
     @Nullable
@@ -69,7 +86,29 @@ public class MusicService extends Service {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        String title, text;
+        if (musicBinder.getName() == null) {
+            title = "音乐即将到达战场";
+            text = "伸出你们的双手";
+        }else {
+            title = musicBinder.getName();
+            text = musicBinder.getArtist();
+        }
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        Notification notification = new NotificationCompat.Builder(this)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(pendingIntent)
+                .build();
+        startForeground(1, notification);
         return super.onStartCommand(intent, flags, startId);
     }
 
